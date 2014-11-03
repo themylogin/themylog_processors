@@ -14,7 +14,7 @@ def get_balance():
 
 
 def parse_amount(s):
-    match = re.search("([0-9.,]+) (RUR|USD)", s)
+    match = re.search("([0-9.,]+) (GBP|RUR|USD)", s)
     return float(match.group(1).replace(",", ".")), match.group(2)
 
 
