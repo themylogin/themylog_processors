@@ -26,7 +26,7 @@ def process(record):
             args["text"] = record.explanation
 
             card, operation, tail = args["text"].split("; ", 2)
-            if operation in ["Pokupka", "Vydacha nalichnyh"]:
+            if operation in ["Oplata uslug", "Pokupka", "Vydacha nalichnyh"]:
                 success, amount, balance, details, datetime_ = tail.split("; ")
 
                 if success == "Uspeshno":
