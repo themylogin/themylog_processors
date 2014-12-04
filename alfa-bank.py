@@ -14,12 +14,15 @@ def get_balance():
 
 
 def parse_amount(s):
-    match = re.search("([0-9.,]+) (GBP|RUR|USD)", s)
+    match = re.search("([0-9.,]+) ([A-Z]{3})", s)
     return float(match.group(1).replace(",", ".")), match.group(2)
 
 
 def process(record):
     if record.application == "sms" and record.logger == "Alfa-Bank":
+        if record.explanation.startswith("Uspeshnaja otmena operacii"):
+            return None
+
         args = None
         if record.explanation.count("; ") >= 3:
             args = {}
