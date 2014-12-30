@@ -15,7 +15,16 @@ def get_balance():
 
 def parse_amount(s):
     match = re.search("([0-9.,]+) ([A-Z]{3})", s)
-    return float(match.group(1).replace(",", ".")), match.group(2)
+
+    amount = match.group(1)
+    if "," in amount and "." in amount:
+        amount = amount.replace(",", "", 1)
+    amount = amount.replace(",", ".")
+    amount = float(amount)
+
+    currency = match.group(2)
+
+    return amount, currency
 
 
 def process(record):
