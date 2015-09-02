@@ -9,9 +9,17 @@ from themylog.level import levels
 from themylog.record import Record
 
 
-def get_balance():
-    return Retriever().retrieve((operator.eq, lambda k: k("application"), "alfa-bank"), 1)[0].args["balance"]
+def modify_balance(amount, currency):
+    balance = Retriever().retrieve((operator.eq, lambda k: k("application"), "alfa-bank"), 1)[0].args["balance"]
+    
+    if not isinstance(balance, dict):
+        balance = {"RUR": balance}
+    balance[currency] = balance.get(currency, 0) + amount
 
+    if balance.keys() == "RUR":
+        return balance["RUR"]
+    else:
+        return balance
 
 def parse_amount(s):
     match = re.search("([0-9.,]+) ([A-Z]{3})", s)
@@ -59,14 +67,24 @@ def process(record):
             args = {}
             args["text"] = record.explanation
 
-            match = re.search("Spisanie so scheta (.+), poluchatel platezha (.+); (.+).", args["text"])
+            match = re.search("Spisanie so scheta (.+), poluchatel platezha (.+); (.+)\.", args["text"])
             if match:
                 args["write_off"], args["write_off_currency"] = parse_amount(match.group(1))
 
-                if args["write_off_currency"] != "RUR":
-                    raise Exception("Non-RUR charges are not supported: %s" % args["text"])
+                args["balance"] = modify_balance(-args["write_off"], args["write_off_currency"])
 
-                args["balance"] = get_balance() - args["write_off"]
+                args["details"] = match.group(2)
+            else:
+                raise Exception("No charge match found in '%s'" % args["text"])
+        elif "Postupleniye na schet" in record.explanation:
+            args = {}
+            args["text"] = record.explanation
+
+            match = re.search("Postupleniye na schet (.+), otpravitel platezha (.+); (.+)\.", args["text"])
+            if match:
+                args["charge"], args["charge_currency"] = parse_amount(match.group(1))
+
+                args["balance"] = modify_balance(args["charge"], args["charge_currency"])
 
                 args["details"] = match.group(2)
             else:
