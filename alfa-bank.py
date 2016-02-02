@@ -47,7 +47,7 @@ def process(record):
 
             card, operation, tail = args["text"].split("; ", 2)
             if operation in ["Oplata uslug", "Pokupka", "Vydacha nalichnyh"]:
-                success, amount, balance, details, datetime_ = tail.split("; ")
+                success, amount, balance, details, datetime_ = tail.split("; ")[:5]
 
                 if success == "Uspeshno":
                     args["write_off"], args["write_off_currency"] = parse_amount(amount)
@@ -56,7 +56,7 @@ def process(record):
 
                     args["details"] = details
             elif operation in ["Postupleniye"]:
-                amount, balance, datetime_ = tail.split("; ")
+                amount, balance, datetime_ = tail.split("; ")[:3]
 
                 args["charge"], args["charge_currency"] = parse_amount(amount)
 
