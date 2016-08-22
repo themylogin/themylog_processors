@@ -6,5 +6,11 @@ import requests
 
 def process(record):
     if record.application == "twitter":
-        for url in record.args.get("urls", {}).values():
+        urls = record.args.get("urls", [])
+        if isinstance(urls, dict):
+            urls = urls.values()
+        else:
+            urls = [url["expanded_url"] for url in urls]
+
+        for url in urls:
             requests.post("http://archive.thelogin.ru/url", json={"url": url}).json()
